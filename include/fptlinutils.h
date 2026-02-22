@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstring>
 #include <unordered_set>
 
 #include "definitions.h"
@@ -8,29 +9,31 @@
 namespace fptlin {
 
 struct bit_pattern {
-  uint32_t max_bit;
-  uint32_t critical_bit;
-  uint32_t pending_bit;
+  proc_mask_type max_bit;
+  proc_mask_type critical_bit;
+  proc_mask_type pending_bit;
 };
 
 struct node {
   int layer;
-  uint32_t bits;
+  proc_mask_type bits;
 };
 
 struct node_hash {
   std::size_t operator()(const node& n) const noexcept {
-    return std::hash<int64_t>{}(std::bit_cast<int64_t>(n));
+    std::size_t h1 = std::hash<int>{}(n.layer);
+    std::size_t h2 = std::hash<proc_mask_type>{}(n.bits);
+    return h1 ^ (h2 + 0x9e3779b97f4a7c15ULL + (h1 << 6) + (h1 >> 2));
   }
 };
 
 bool operator==(const node& a, const node& b) noexcept {
-  return std::bit_cast<int64_t>(a) == std::bit_cast<int64_t>(b);
+  return std::memcmp(&a, &b, sizeof(node)) == 0;
 }
 
 // for tie-breaking only, and does not imply actual ordering of the two
 bool operator<(const node& a, const node& b) noexcept {
-  return std::bit_cast<int64_t>(a) < std::bit_cast<int64_t>(b);
+  return std::memcmp(&a, &b, sizeof(node)) < 0;
 }
 
 typedef std::unordered_set<node, node_hash> node_set;
@@ -76,9 +79,9 @@ template <typename value_type>
 std::vector<bit_pattern> get_bit_pattern(events_t<value_type>& events) {
   std::vector<bit_pattern> ret;
   ret.reserve(events.size());
-  uint32_t max_bit = 0;
+  proc_mask_type max_bit = 0;
   for (auto [time, is_inv, optr] : events) {
-    uint32_t opbit = 1 << optr->proc;
+    proc_mask_type opbit = 1ULL << optr->proc;
     if (is_inv) {
       ret.push_back({max_bit, 0, opbit});
       max_bit |= opbit;

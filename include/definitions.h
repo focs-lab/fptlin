@@ -9,7 +9,7 @@ namespace fptlin {
 
 #define MIN_TIME std::numeric_limits<time_type>::lowest()
 #define MAX_TIME std::numeric_limits<time_type>::max()
-#define MAX_PROC_NUM std::numeric_limits<proc_type>::digits
+#define MAX_PROC_NUM std::numeric_limits<proc_mask_type>::digits
 #define EMPTY_VALUE -1
 
 #define FPTLIN_METHOD_EXPAND(MACRO) \
@@ -55,6 +55,7 @@ inline std::string methodtos(const Method& method) {
 typedef unsigned long long time_type;
 typedef unsigned int id_type;
 typedef unsigned int proc_type;
+typedef unsigned long long proc_mask_type;
 
 // As operations are assumed to be complete, return values are known and can be
 // embedded within value_type if desired

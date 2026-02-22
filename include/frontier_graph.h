@@ -33,18 +33,18 @@ struct frontier_graph {
    * Hence, joining and finding are all O(1).
    */
   void build(const events_t<value_type>& events) {
-    uint32_t max_bit = 0;
+    proc_mask_type max_bit = 0;
     operation_t<value_type>* ongoing[MAX_PROC_NUM];
     for (int layer = 0; std::cmp_less(layer, events.size()); ++layer) {
       auto [time, is_inv, optr] = events[layer];
 
       bool ignore =
           (sizeof...(methods) > 0) && ((optr->method != methods) && ...);
-      uint32_t opbit = ignore ? 0 : 1 << optr->proc;
-      uint32_t crit_bit = is_inv ? 0 : opbit;
+      proc_mask_type opbit = ignore ? 0 : 1ULL << optr->proc;
+      proc_mask_type crit_bit = is_inv ? 0 : opbit;
 
       // iterate through all sub-masks in shrinking order
-      for (uint32_t sub = max_bit;; sub = (sub - 1) & max_bit) {
+      for (proc_mask_type sub = max_bit;; sub = (sub - 1) & max_bit) {
         // union join
         node curr{layer, sub};
         node first = parent_map.try_emplace(curr, curr).first->second;
@@ -55,8 +55,8 @@ struct frontier_graph {
         }
 
         // populate `adj_list`
-        for (uint32_t x = (max_bit & ~sub); x; x &= (x - 1)) {
-          uint32_t curr_bit = x & -x;
+        for (proc_mask_type x = (max_bit & ~sub); x; x &= (x - 1)) {
+          proc_mask_type curr_bit = x & -x;
           operation_t<value_type>* to_add = ongoing[std::countr_zero(x)];
           node next{layer, sub | curr_bit};
           madj_list[first].emplace_back(
