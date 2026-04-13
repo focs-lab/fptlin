@@ -1,6 +1,10 @@
-# Fptlin
+# FPTLin
 
-Fixed parameter tractable algorithms for monitoring linearizability for concurrent histories.
+Fixed parameter tractable algorithms for monitoring linearizability for concurrent histories. Based on the following paper:
+
+```
+Zheng Han Lee and Umang Mathur. 2026. Fixed Parameter Tractable Linearizability Monitoring. Proc. ACM Program. Lang. 10, PLDI, Article 237 (June 2026). https://doi.org/10.1145/3808315
+```
 
 ## Histories
 
